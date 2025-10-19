@@ -40,21 +40,12 @@ class DocumentService:
         self.extractor = LlamaExtract(api_key=key)
         self.agent = self.extractor.get_agent(name="Law Agent") or self.extractor.create_agent(data_schema=LawsDocument, name="Law Agent")
     
-    def create_documents(self, file_path: str) -> list[Document]:
+
+    def build_documents(self, file_path: str, laws_data: LawsDocument) -> list[Document]:
         """
-        Parse PDF and extract structured legal sections using LlamaExtract.
-        Converts the hierarchical structure into flat documents for vector search.
+        Wrapper to create documents from a PDF file.
         """
-        # Use LlamaExtract to extract structured data from PDF
-        extraction_result = self.agent.extract(file_path)
-        
-        # Get the extracted data
-        laws_data = extraction_result.data
-        
-        # Convert structured data to flat documents
         documents = []
-        
-        print(json.dumps(laws_data, indent=2, ensure_ascii=False))
         for law_category in laws_data['laws']:
             for section in law_category['sections']:
                 # Create a document for each section
@@ -85,6 +76,19 @@ class DocumentService:
                             }
                         )
                         documents.append(subdoc)
+        return documents
+
+    def create_documents(self, file_path: str) -> list[Document]:
+        """
+        Parse PDF and extract structured legal sections using LlamaExtract.
+        Converts the hierarchical structure into flat documents for vector search.
+        """
+        # Use LlamaExtract to extract structured data from PDF
+        extraction_result = self.agent.extract(file_path)
+
+        
+        # Convert structured data to flat documents
+        documents = self.build_documents(file_path=file_path, laws_data=extraction_result.data)
         
         return documents
             

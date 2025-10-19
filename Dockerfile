@@ -13,6 +13,7 @@ RUN pip install uvicorn
 
 # API key
 ENV OPENAI_API_KEY=$OPENAI_API_KEY
+ENV LLAMA_CLOUD_KEY=$LLAMA_CLOUD_KEY
 
 # Copy the content of the local src directory to the working directory
 COPY ./app /norm-fullstack/app
