@@ -1,9 +1,51 @@
-This repository contains a client and server codebase. 
+# Norm AI Legal Query System
 
-## Server Repository:
+A fullstack application that allows users to query Game of Thrones laws using AI-powered semantic search with citations.
 
-This codebase contains a list of laws (`docs/laws.pdf`) taken from the fictional series “Game of Thrones” (randomly pulled from a wiki fandom site... unfortunately knowledge of the series does not provide an edge on this assignment). Your task is to implement a new service (described in take home exercise document) and provide access to that service via a FastAPI endpoint running in a docker container. Please replace this readme with the steps required to run your app.
+## Quick Start
 
-## Client Repository 
+### Prerequisites
+- Docker and Docker Compose
+- Environment variables: `OPENAI_API_KEY` and `LLAMA_CLOUD_KEY`
 
-In the `frontend` folder you'll find a light NextJS app with it's own README including instructions to run. Your task here is to build a minimal client experience that utilizes the service build in part 1.
+### Run with Docker Compose (Recommended)
+```bash
+# Set your API keys
+export OPENAI_API_KEY="your-openai-key"
+export LLAMA_CLOUD_KEY="your-llama-cloud-key"
+
+# Start both frontend and backend
+docker-compose up
+```
+
+**Access the application:**
+- Frontend: http://localhost:3000
+- Backend API: http://localhost:8000
+
+### Alternative: Run Separately
+
+**Backend only:**
+```bash
+docker build -t norm-ai-app .
+docker run -p 8000:80 \
+  -e OPENAI_API_KEY="your-key" \
+  -e LLAMA_CLOUD_KEY="your-key" \
+  norm-ai-app
+```
+
+**Frontend only:**
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+## Usage
+1. Open http://localhost:3000
+2. Enter a legal query (e.g., "What happens if I steal from the Sept?")
+3. View AI-generated responses with source citations
+
+## Architecture
+- **Backend**: FastAPI with Qdrant vector search and OpenAI
+- **Frontend**: Next.js with TypeScript
+- **Data**: Game of Thrones laws PDF processed via LlamaExtract

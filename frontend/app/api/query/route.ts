@@ -9,7 +9,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Make request to your FastAPI backend
-    const backendUrl = `http://localhost:8000/query?q=${encodeURIComponent(query)}`;
+    // Use environment variable for backend URL, fallback to localhost for local development
+    const backendBaseUrl = process.env.BACKEND_URL || 'http://localhost:8000';
+    const backendUrl = `${backendBaseUrl}/query?q=${encodeURIComponent(query)}`;
     const response = await fetch(backendUrl);
     
     if (!response.ok) {

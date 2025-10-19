@@ -17,6 +17,8 @@ services:
       - "3000:3000"
     volumes:
       - ./frontend:/app
+    environment:
+      - BACKEND_URL=http://backend:80
     command: sh -c "npm install && npm run dev"
     container_name: norm-ai-frontend
     depends_on:
