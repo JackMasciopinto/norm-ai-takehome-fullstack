@@ -100,14 +100,14 @@ class QdrantService:
         self.index = None
         self.k = k
     
-    def connect(self) -> None:
+    def connect(self, collection_name: str = 'temp') -> None:
         # Configure global Settings (replaces ServiceContext)
         Settings.embed_model = OpenAIEmbedding(api_key=openai_key)
         Settings.llm = OpenAI(api_key=openai_key, model="gpt-4")
         
         # Create Qdrant client and vector store
         client = qdrant_client.QdrantClient(location=":memory:")
-        vstore = QdrantVectorStore(client=client, collection_name='temp')
+        vstore = QdrantVectorStore(client=client, collection_name=collection_name)
 
         # Create index from vector store
         self.index = VectorStoreIndex.from_vector_store(vector_store=vstore)
