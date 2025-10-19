@@ -1,8 +1,8 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
+from app.base_legal_doc import LawsDocument
 import qdrant_client
 from llama_index.vector_stores.qdrant import QdrantVectorStore
 from llama_index.embeddings.openai import OpenAIEmbedding
-from llama_cloud_services import LlamaParse
 from llama_index.core import SimpleDirectoryReader, VectorStoreIndex, Settings
 from llama_index.core.node_parser import SemanticSplitterNodeParser
 from llama_index.llms.openai import OpenAI
@@ -10,8 +10,10 @@ from llama_index.core.query_engine import CitationQueryEngine
 import json
 from llama_index.core.schema import Document
 from dataclasses import dataclass
+from typing import Optional
 import os
 import fitz  # PyMuPDF
+from llama_cloud_services import LlamaExtract
 
 key = os.environ['LLAMA_CLOUD_KEY']
 openai_key = os.environ['OPENAI_API_KEY']
@@ -32,55 +34,59 @@ class Output(BaseModel):
     citations: list[Citation]
 
 class DocumentService:
-    """Extract laws from a PDF and return LlamaIndex Documents."""
+    """Extract laws from a PDF using LlamaExtract and return LlamaIndex Documents."""
     
-    def __init__(self, file_path: str):
-        self.file_path = file_path
-        self.llm = OpenAI(api_key=openai_key, model="gpt-4")
-
-    def parse_pdf(self) -> list[Document]:
-        """
-        Parse PDF and extract structured legal sections.
-        Uses LlamaParse for intelligent PDF extraction and GPT for section identification.
-        """
-        parser = LlamaParse(api_key=key, result_type="text")
-        documents = parser.load_data(self.file_path)
-        return "\n".join([doc.text for doc in documents])
+    def __init__(self):
+        self.extractor = LlamaExtract(api_key=key)
+        self.agent = self.extractor.get_agent(name="Law Agent") or self.extractor.create_agent(data_schema=LawsDocument, name="Law Agent")
     
-    def extract_sections(self, full_text: str) -> list[Document]:
+    def create_documents(self, file_path: str) -> list[Document]:
         """
-        Extract sections from the full text of the PDF.
-        Uses GPT for section identification.
+        Parse PDF and extract structured legal sections using LlamaExtract.
+        Converts the hierarchical structure into flat documents for vector search.
         """
-        prompt = f"""You are analyzing a legal document. Extract each distinct legal section/law from the text below.
+        # Use LlamaExtract to extract structured data from PDF
+        extraction_result = self.agent.extract(file_path)
         
-                    Legal documents typically have numbered sections like:
-                    - 1, 2, 3 (main sections)
-                    - 1.1, 1.2, 2.1, 2.2 (subsections)
-                    - Or similar hierarchical numbering
-
-                    For each section found, return ONLY a JSON array with objects containing:
-                    - "section_id": The section number (e.g., "1", "1.1", "2")
-                    - "text": The complete text of that section
-
-                    Return ONLY the JSON array, no other text. If no clear sections are found, break the document into logical paragraphs or segments.
-
-                    Document text:
-                    {full_text}"""
-        response = self.llm.complete(prompt)
-        response_text = response.text.strip()
-        sections = json.loads(response_text)
-        return sections
-    
-    def create_documents(self) -> list[Document]:
-        """
-        Parse PDF and extract structured legal sections.
-        Uses LlamaParse for intelligent PDF extraction and GPT for section identification.
-        """
-        full_text = self.parse_pdf()
-        sections = self.extract_sections(full_text=full_text)
-        docs = [Document(metadata={"Section": f"Law {section['section_id']}"}, text=section['text']) for section in sections]
-        return docs
+        # Get the extracted data
+        laws_data = extraction_result.data
+        
+        # Convert structured data to flat documents
+        documents = []
+        
+        print(json.dumps(laws_data, indent=2, ensure_ascii=False))
+        for law_category in laws_data['laws']:
+            for section in law_category['sections']:
+                # Create a document for each section
+                section_text = f"{section['description']}"
+                
+                doc = Document(
+                        text=f"Section: {section['section_number']}\n{section_text}",
+                    metadata={
+                        "section": section['section_number'],
+                        "category": law_category['title'],
+                        "source": file_path
+                    }
+                )
+                documents.append(doc)
+                
+                # Also create documents for subsections if they exist
+                if section['subsections']:
+                    for subsection in section['subsections']:
+                        subsection_text = f"{subsection['description']}"
+                        
+                        subdoc = Document(
+                            text=f"Section: {subsection['subsection_number']}\n{subsection_text}",
+                            metadata={
+                                "section": subsection['subsection_number'],
+                                "category": law_category['title'],
+                                "parent_section": section['section_number'],
+                                "source": file_path
+                            }
+                        )
+                        documents.append(subdoc)
+        
+        return documents
             
 class QdrantService:
     def __init__(self, k: int = 3):
@@ -149,7 +155,7 @@ class QdrantService:
         if hasattr(response, 'source_nodes'):
             for node in response.source_nodes:
                 citation = Citation(
-                    source=node.metadata.get("Section", "Unknown"),
+                    source=node.metadata.get("section", "N/A"),
                     text=node.text
                 )
                 citations.append(citation)

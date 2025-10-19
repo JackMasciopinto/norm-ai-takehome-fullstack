@@ -9,14 +9,14 @@ def test_query_functionality():
     # Step 1: Load and parse PDF
     print("\n📄 Step 1: Parsing PDF...")
     file_path = "docs/laws.pdf"
-    doc_service = DocumentService(file_path=file_path)
-    docs = doc_service.create_documents()
+    doc_service = DocumentService()
+    docs = doc_service.create_documents(file_path=file_path)
     print(f"✅ Extracted {len(docs)} documents")
     
     # Print first few sections
     print("\n📋 First 3 sections:")
     for i, doc in enumerate(docs[:3]):
-        print(f"  - {doc.metadata['Section']}: {doc.text}")
+        print(f"  - Section {doc.metadata['section']}: {doc.text[:100]}...")
     
     # Step 2: Initialize vector store
     print("\n🔗 Step 2: Connecting to Qdrant...")
@@ -49,6 +49,7 @@ def test_query_functionality():
         print(f"📚 Citations ({len(output.citations)}):")
         for citation in output.citations:
             print(f"\n  Source: {citation.source}")
+            print("----------")
             print(f"  Text: {citation.text}")
     
     print("\n\n✨ Test completed successfully!")

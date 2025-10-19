@@ -13,17 +13,20 @@ def test_extract_laws():
     print(f"Parsing: {pdf_path}\n")
     
     try:
-        docs = DocumentService(file_path=pdf_path).create_documents()
+        doc_service = DocumentService()
+        docs = doc_service.create_documents(file_path=pdf_path)
         
         # Verify we got documents
         assert len(docs) > 0, "Should have extracted at least one document"
         print(f"Extracted {len(docs)} law documents\n")
         print("=" * 80)
         
-        # Display extracted LlamaParse documents directly
+        # Display extracted documents
         for i, doc in enumerate(docs, 1):
             print(f"\nDOCUMENT {i}")
-            print(f"Section: {doc.metadata.get('Section', 'N/A')}")
+            print(f"Section: {doc.metadata.get('section', 'N/A')}")
+            print(f"Parent Section: {doc.metadata.get('parent_section', 'N/A')}")
+            print(f"Category: {doc.metadata.get('category', 'N/A')}")
             print("-" * 80)
             print(doc.text)
             print("=" * 80)
