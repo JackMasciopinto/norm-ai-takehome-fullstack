@@ -1,2 +1,11 @@
 pydantic==2.5.3
-# add additional modules here
+pymupdf
+fastapi
+uvicorn
+qdrant-client
+llama-index
+llama-index-vector-stores-qdrant
+llama-index-embeddings-openai
+llama-index-llms-openai
+llama-cloud-services
+openai
