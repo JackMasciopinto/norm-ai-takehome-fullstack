@@ -113,7 +113,7 @@ export default function Page() {
             
             <div style={{ marginBottom: 20 }}>
               <strong style={{ color: '#2800D7' }}>Answer:</strong>
-              <p style={{ margin: '8px 0', lineHeight: 1.6 }}>{apiResponse.response}</p>
+              <p style={{ margin: '8px 0', lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>{apiResponse.response}</p>
             </div>
             
             {apiResponse.citations && apiResponse.citations.length > 0 && (

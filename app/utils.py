@@ -52,11 +52,10 @@ class DocumentService:
                 section_text = f"{section['description']}"
                 
                 doc = Document(
-                        text=f"Section: {section['section_number']}\n{section_text}",
+                        text=section_text,
                     metadata={
                         "section": section['section_number'],
                         "category": law_category['title'],
-                        "source": file_path
                     }
                 )
                 documents.append(doc)
@@ -67,12 +66,11 @@ class DocumentService:
                         subsection_text = f"{subsection['description']}"
                         
                         subdoc = Document(
-                            text=f"Section: {subsection['subsection_number']}\n{subsection_text}",
+                            text=subsection_text,
                             metadata={
                                 "section": subsection['subsection_number'],
                                 "category": law_category['title'],
                                 "parent_section": section['section_number'],
-                                "source": file_path
                             }
                         )
                         documents.append(subdoc)
