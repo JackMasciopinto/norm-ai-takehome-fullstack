@@ -132,7 +132,7 @@ export default function Page() {
                       }}
                     >
                       <div style={{ fontSize: 14, fontWeight: '500', marginBottom: 4, color: '#555' }}>
-                        Source: {citation.source}
+                        Statute: {citation.source}
                       </div>
                       <div style={{ fontSize: 14, lineHeight: 1.4, color: '#666' }}>
                         {citation.text}

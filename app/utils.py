@@ -38,43 +38,39 @@ class DocumentService:
     
     def __init__(self):
         self.extractor = LlamaExtract(api_key=key)
-        self.agent = self.extractor.get_agent(name="Law Agent") or self.extractor.create_agent(data_schema=LawsDocument, name="Law Agent")
-    
+        try:
+            print( "Trying to get existing agent..." )
+            self.agent = self.extractor.get_agent(name="Law Agent")
+        except:
+            self.agent = self.extractor.create_agent(data_schema=LawsDocument, name="Law Agent")
+
+    def process_section_recursively(self, section_data):
+            """Recursively process sections and all nested subsections."""
+            section_text = section_data.pop('text', '')
+            if section_text:
+                doc = Document(
+                    text=section_text,
+                    metadata={
+                        **section_data,
+                    }
+                )
+                self.documents.append(doc)
+            
+            subsections = section_data.get('subsections', [])
+            if subsections:
+                for subsection in subsections:
+                    self.process_section_recursively(subsection)
 
     def build_documents(self, file_path: str, laws_data: LawsDocument) -> list[Document]:
         """
         Wrapper to create documents from a PDF file.
         """
-        documents = []
+        self.documents = []
         for law_category in laws_data['laws']:
             for section in law_category['sections']:
-                # Create a document for each section
-                section_text = f"{section['description']}"
-                
-                doc = Document(
-                        text=section_text,
-                    metadata={
-                        "section": section['section_number'],
-                        "category": law_category['title'],
-                    }
-                )
-                documents.append(doc)
-                
-                # Also create documents for subsections if they exist
-                if section['subsections']:
-                    for subsection in section['subsections']:
-                        subsection_text = f"{subsection['description']}"
-                        
-                        subdoc = Document(
-                            text=subsection_text,
-                            metadata={
-                                "section": subsection['subsection_number'],
-                                "category": law_category['title'],
-                                "parent_section": section['section_number'],
-                            }
-                        )
-                        documents.append(subdoc)
-        return documents
+                self.process_section_recursively(section)
+
+        return self.documents
 
     def create_documents(self, file_path: str) -> list[Document]:
         """

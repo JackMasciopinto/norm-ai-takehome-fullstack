@@ -3,12 +3,13 @@ from typing import Optional
 
 # Pydantic models for structured extraction matching the schema
 class Subsection(BaseModel):
-    subsection_number: str = Field(description="The subsection number (e.g., 3.1.1, 5.1.2.1).")
-    description: str = Field(description="A description of the law or regulation within the subsection. Do not include the section number in the description.")
+    section: str = Field(description="The subsection number (e.g., 3.1.1, 5.1.2.1).")
+    parent_section: str = Field(description="The section number to which this subsection belongs (e.g., 3.1, 5.1).")
+    text: str = Field(description="A description of the law or regulation within the subsection. Do not include the section number in the description.")
 
 class Section(BaseModel):
-    section_number: str = Field(description="The section number (e.g., 1.1, 2.1, 3.1).")
-    description: str = Field(description="A description of the law or regulation within the section. Do not include the section number in the description.")
+    section: str = Field(description="The section number (e.g., 1.1, 2.1, 3.1).")
+    text: str = Field(description="A description of the law or regulation within the section. Do not include the section number in the description.")
     subsections: Optional[list[Subsection]] = Field(default=None, description="An array of subsections within the section.")
 
 class LawCategory(BaseModel):
