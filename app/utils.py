@@ -12,6 +12,7 @@ from llama_index.core.schema import Document
 from dataclasses import dataclass
 from typing import Optional
 import os
+import re
 import fitz  # PyMuPDF
 from llama_cloud_services import LlamaExtract
 
@@ -113,6 +114,12 @@ class QdrantService:
     def load(self, docs = list[Document]):
         self.index.insert_nodes(docs)
     
+    def clean_text(self, text: str) -> str:
+        """
+        Clean citation text by removing "Source X:" prefixes.
+        """
+        return re.sub(r'Source \d+:', '', text)
+
     def query(self, query_str: str) -> Output:
         """
         This method needs to initialize the query engine, run the query, and return
@@ -154,7 +161,7 @@ class QdrantService:
             for node in response.source_nodes:
                 citation = Citation(
                     source=node.metadata.get("section", "N/A"),
-                    text=node.text
+                    text=self.clean_text(node.text)
                 )
                 citations.append(citation)
         

@@ -49,3 +49,9 @@ npm run dev
 - **Backend**: FastAPI with Qdrant vector search and OpenAI
 - **Frontend**: Next.js with TypeScript
 - **Data**: Game of Thrones laws PDF processed via LlamaExtract
+
+
+## Design Decisions
+- **Database** For simplicity no database vector store included/using in memory version, in a live app this would be a real db
+- **Document Loading** The document is loaded when the app starts up, each time it is deployed. In a live app there would be a separate documents endpoint for inputting documents
+- **Documents Structure** The document is extracted into a general structure of sections/subsections to be flexible for future uses. If specific fields or structure were needed the extract function could be prompted with an arbitrary JSON or extend off of the existing base_legal_doc.py. Very likely becoming a database object given the potential variety required.

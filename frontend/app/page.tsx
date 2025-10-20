@@ -131,11 +131,14 @@ export default function Page() {
                         border: '1px solid #e0e0e0'
                       }}
                     >
-                      <div style={{ fontSize: 14, fontWeight: '500', marginBottom: 4, color: '#555' }}>
-                        Statute: {citation.source}
+                      <div style={{ fontSize: 14, fontWeight: '500', marginBottom: 4, color: '#2800D7' }}>
+                        Citation: {index + 1}
                       </div>
-                      <div style={{ fontSize: 14, lineHeight: 1.4, color: '#666' }}>
-                        {citation.text}
+                      <div style={{ fontSize: 14, lineHeight: 1.4, color: '#666', marginBottom: 4 }}>
+                        Text: {citation.text}
+                      </div>
+                      <div style={{ fontSize: 14, fontWeight: '500', color: '#555' }}>
+                        Statute: {citation.source}
                       </div>
                     </div>
                   ))}
